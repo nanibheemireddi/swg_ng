@@ -1,0 +1,320 @@
+swagger: "2.0"
+info:
+  description: "This is the API documentation for the coin collection App of Wash."
+  version: "1.0.0"
+  title: "Wash Coin-Collection"
+  # termsOfService: "http://swagger.io/terms/"
+  # contact:
+  #   email: "sample@washlaundry.com"
+  # license:
+  #   name: "Apache 2.0"
+  #   url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "counterreading.ext.washlaundry.com"
+basePath: "/api/v1"
+schemes:
+- "https"
+- "http"
+paths:
+  /login-AD:
+    post:
+      tags:
+      - "user"
+      summary: "Users can Login using their email and password"
+      description: ""
+      operationId: "Login"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json" 
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "userEmail and password"
+        required: true
+        schema:
+          $ref: "#/definitions/users"
+      responses:
+        200:
+          headers:
+            'x-access-wash-token':
+              type: string
+            'x-refresh-wash-token':
+              type: string
+          description: "On Logged In sucessfully"
+          schema:
+            items:
+              $ref: "#/definitions/LoginResponse"
+        400:
+          description: "Login Fail"
+          
+  /slips:
+    post:
+      tags:
+      - "slips"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "x-access-wash-token"
+        in: "header"
+        required: true
+        type: "string"
+      - name: "x-refresh-wash-token"
+        in: "header"
+        required: true
+        type: "string"  
+      - in: "body"
+        name: "body"
+        description: "route Details"
+        required: true
+        schema:
+          $ref: "#/definitions/slips"
+      responses:
+        200:
+          description: "On Success"
+          schema:
+            items:
+              $ref: "#/definitions/slipResponse"
+  /set-slip-status:
+    post:
+      tags:
+      - "slips"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "x-access-wash-token"
+        in: "header"
+        required: true
+        type: "string"
+      - name: "x-refresh-wash-token"
+        in: "header"
+        required: true
+        type: "string"  
+      - name: "body"
+        in: "body"
+        description: "needs the status and slipID to update a slip with UserName"
+        required: true
+        schema:
+          type: "array"
+          items:
+            $ref: "#/definitions/setSlipStatus"
+      responses:
+        200:
+          description: "On Success"
+          schema:
+            type: "object"
+            properties:
+              success :
+                type: "boolean"
+              msg:
+                type: "string"
+              data:
+                type: "object"
+                properties:
+                  updatedSlipIds:
+                    type: "array"
+                    items:
+                      type: "integer"  
+  /slips/{slipId}:
+    get:
+      tags:
+      - slips
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      operationId: "getslipById"
+      parameters:
+      - name: "x-access-wash-token"
+        in: "header"
+        required: true
+        type: "string"
+      - name: "x-refresh-wash-token"
+        in: "header"
+        required: true
+        type: "string"
+      - name: "slipId"
+        in: "path"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "To get the Details of Slip"
+          schema:
+            items:
+              $ref: "#/definitions/slipResponse"
+        400:
+          description: "When incorrect slipId is passed or not Found."
+          schema:
+            type: "object"
+            properties:
+              success :
+                type: "boolean"
+              msg:
+                type: "string"  
+  /set-machine-reading:
+    post:
+      tags:
+      - slips
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "x-access-wash-token"
+        in: "header"
+        required: true
+        type: "string"
+      - name: "x-refresh-wash-token"
+        in: "header"
+        required: true
+        type: "string"
+      - name: "body"
+        in: "body"
+        required: true
+        schema:
+          items:
+            properties:
+              slipId: 
+                type: "string" 
+              machineId:
+                type: "string" 
+              machineType:
+                type: "string"
+              moneyCounterReading: 
+                type: "string" 
+              CardCounterReading:
+                type: "string" 
+              userEmail:
+                type: "string"
+              reason: 
+                type: "string" 
+              comment:
+                type: "string" 
+              status:
+                type: "string"
+              slipCurrentStatus:
+                type: "string"
+      responses:
+        '200':
+          description: "on adding Machine successFully"
+          schema:
+            type: "object"
+            properties:
+              success :
+                type: "boolean"
+              msg:
+                type: "string"
+                example: "Machine reading added successfully"
+              result:
+                type: "object"
+                properties:
+                  updatedMachineIds:
+                    type: "array"
+                    items:
+                      type: "string"
+                  updatedSlipIds:
+                    type: "array"
+                    items:
+                      type: "string"
+        '404':
+          description: "Any DB error encountered."
+          
+definitions:
+  users:
+    type: "object"
+    required:
+    - "username"
+    - "password"
+    properties:
+      username:
+        type: "string"
+        example: "username@washlaundry.com"
+      password:
+        type: "string"
+  LoginResponse:
+    type: "object"
+    properties:
+      user:
+        type: "object"
+      machineType:
+        type: "object"
+      machineReasons:
+        type: "array"
+        items:
+          type: "string"
+      adminContact:
+        type: "string"
+      helpManualPdf:
+        type: "string"
+  slips:
+    type: "object"
+    properties:
+      route:
+        type: "integer"
+      day:
+        type: "integer"
+      scheduledDate:
+        type: "string"
+        description: "should be in the format of mm/dd/yy"
+        example: "11/19/2018"
+        items:
+          type: "string"
+  slipResponse:
+    type: "object"
+    properties: 
+      branch:
+        type: "string"
+      route:
+        type: "string"
+      days:
+        type: "string"
+      contactSupervisor:
+        type: "string"
+      Locations:
+        type: "array"
+        items:
+              $ref: "#/definitions/slipArray"
+  slipArray:
+      properties:
+        slips:
+          type: "array"
+          items:
+            $ref: '#/definitions/addMachine'
+  setSlipStatus:
+    items:
+      type: "object"
+    properties:
+      slipId: 
+        type: "string" 
+      userEmail:
+        type: "string" 
+      status:
+        type: "string" 
+  addMachine:
+    items:
+      type: "object"
+    properties:
+      slipId: 
+        type: "string" 
+      machineId:
+        type: "string" 
+      machineType:
+        type: "string"
+      moneyCounterReading: 
+        type: "string" 
+      CardCounterReading:
+        type: "string" 
+      userEmail:
+        type: "string"
+      reason: 
+        type: "string" 
+      comment:
+        type: "string" 
+      status:
+        type: "string"
+      slipCurrentStatus:
+        type: "string"
